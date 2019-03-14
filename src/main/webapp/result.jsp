@@ -1,9 +1,16 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page import="java.util.*, com.sun.jersey.api.client.Client, com.sun.jersey.api.client.ClientResponse, com.sun.jersey.api.client.WebResource" %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <title>Login</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
   <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -37,6 +44,9 @@
   padding: 15px;
   box-sizing: border-box;
   font-size: 14px;
+}
+h3{
+    color:rgb(43, 141, 233);
 }
 .form button {
   font-family: "Roboto", sans-serif;
@@ -106,25 +116,55 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;      
 }
+.navbar-custom {
+    color: #FFFFFF;
+    background-color: rgb(43, 141, 233);
+    }
+    .navbar-default .navbar-brand {
+    color: #010101;
+}
   </style>
 
 </head>
 <body>
+<%
+ Client client = Client.create();
+//Set the appropriate URL for POST request
+String postUrl = "http://localhost:8080/MCQ-as-a-service/rest/MCQService/calculateResult";
+
+WebResource webResource = client.resource(postUrl);
+ 
+String inputData = "{\"submittedTest\": {" +
+							"\"qn1\":\"" + request.getParameter("qn1") + "\"," +
+							"\"qn2\":\"" + request.getParameter("qn2") + "\"," +
+							"\"qn3\":\"" + request.getParameter("qn3") + "\"," +
+							"\"qn4\":\"" + request.getParameter("qn4") + "\"," +
+							"\"qn5\":\"" + request.getParameter("qn5") + "\"}}";
+							
+ ClientResponse clientResponse = webResource.type("application/json").post(ClientResponse.class,inputData);
+  if(clientResponse.getStatus()!=201){
+      throw new RuntimeException("HTTP Error: "+ clientResponse.getStatus());
+  }
+   
+ String result = clientResponse.getEntity(String.class);  
+%>
+        <nav class="navbar navbar-default navbar-custom">
+                <div class="container-fluid">
+                  <div class="navbar-header">
+                    <a class="nav navbar-brand" href="#">Test your Skill!</a>
+                  </div>
+                  <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">Home</a></li>
+                  </ul>
+                  <ul class="nav navbar-nav navbar-right">
+                      <li><a href="index.jsp"><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>
+                  </ul>
+                </div>
+              </nav>
 <div class="login-page">
         <div class="form">
-          <form class="register-form" action="register.jsp" method="post">
-            <input name="fullName" type="text" placeholder="full name" required/>
-            <input name="email" type="text" placeholder="email" required/>
-            <input name="password" type="password" placeholder="password" required/>
-            <button>create</button>
-            <p class="message">Already registered? <a href="#">Sign In</a></p>
-          </form>
-          <form class="login-form" action="login.jsp" method="post">
-            <input name="email" type="text" placeholder="email" required/>
-            <input name="password" type="password" placeholder="password" required/>
-            <button>login</button>
-            <p class="message">Not registered? <a href="#">Create an account</a></p>
-          </form>
+          <h1>Successfully completed Test !</h1>
+          <h3>Your Score: <%= result %>/10</h3>
         </div>
       </div>
       <script>
@@ -135,50 +175,3 @@ body {
     </body>
     </html>
     
-<%-- <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-    
-<%@ page import="java.util.*, com.sun.jersey.api.client.Client, com.sun.jersey.api.client.ClientResponse, com.sun.jersey.api.client.WebResource" %>
-
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>MCQ Service</title>
-</head>
-<body>
-<%
-/* Client client = Client.create();
-//set the appropriate URL
-String getUrl = "http://localhost:8080/MCQ-as-a-service/rest/MCQService/sarath";
- 
-WebResource webResource = client.resource(getUrl);
-ClientResponse clientResponse = webResource.accept("application/json").get(ClientResponse.class);
-//a successful response returns 200
-        if(clientResponse.getStatus()!=200){
-    throw new RuntimeException("HTTP Error: "+ clientResponse.getStatus());
-}
- 
-String result = clientResponse.getEntity(String.class);
-System.out.println("Response from the Server: ");
-System.out.println(result); */
-
-Client client = Client.create();
-//Set the appropriate URL for POST request
-String postUrl = "http://localhost:8080/MCQ-as-a-service/rest/MCQService/login";
-
-  WebResource webResource = client.resource(postUrl);
-  String inputData = "{\"fullName\":\"Sarath Kumar S\",\"email\":\"sk331857@gmail.com\",\"password\":\"password\"}";
-  ClientResponse clientResponse = webResource.type("application/json").post(ClientResponse.class,inputData);
-    if(clientResponse.getStatus()!=201){
-        throw new RuntimeException("HTTP Error: "+ clientResponse.getStatus());
-    }
-     
-   String result = clientResponse.getEntity(String.class);
-   
-  
-%>
-
-<%= result %>
-</body>
-</html> --%>

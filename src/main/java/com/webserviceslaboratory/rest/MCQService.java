@@ -1,8 +1,12 @@
 package com.webserviceslaboratory.rest;
 
 import com.webserviceslaboratory.data.model.User;
+import com.webserviceslaboratory.data.model.Test;
 
 import java.sql.*;
+import java.util.Map;
+import java.util.HashMap;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -47,8 +51,18 @@ public class MCQService {
 
 		    //Execute a query
 		    stmt = conn.createStatement();
+		    
+		    String sql = "select * from user";
+			  
+		    ResultSet rs = stmt.executeQuery(sql);
+		    
+		    while(rs.next()) {
+		    	if((rs.getString("email")).equals(user.getEmail()) && (rs.getString("password")).equals(user.getPassword())) {
+		    		return Response.status(201).entity("Already registered!").build();
+		    	}
+		    }
 		      
-		    String sql = "INSERT INTO user (full_name, email, password) VALUES ('" + user.getFullName() + "','" + user.getEmail() + "','" + user.getPassword() + "')";
+		    sql = "INSERT INTO user (full_name, email, password) VALUES ('" + user.getFullName() + "','" + user.getEmail() + "','" + user.getPassword() + "')";
 		    stmt.executeUpdate(sql);
 		   }catch(SQLException se){
 		      //Handle errors for JDBC
@@ -71,7 +85,7 @@ public class MCQService {
 		      }//end finally try
 		   }//end try
 
-		return Response.status(201).entity("registered").build();
+		return Response.status(201).entity("Registered Successfully!").build();
 	}
 	
 	@POST
@@ -123,4 +137,25 @@ public class MCQService {
 
 		return Response.status(201).entity("false").build();
 	}
+	
+	@POST
+	@Path("/calculateResult")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response calculateResult(Test test) {
+		Map<String, String> qnAnswer = new HashMap<String, String>();
+		int mark = 0;
+		qnAnswer.put("qn1", "153600");
+		qnAnswer.put("qn2", ".06");
+		qnAnswer.put("qn3", "Friday");
+		qnAnswer.put("qn4", "log (2 + 3) = log (2 x 3)");
+		qnAnswer.put("qn5", "7.2");
+		
+		for (Map.Entry<String,String> entry : (test.getSubmittedTest()).entrySet()) {
+            if((entry.getValue()).equals(qnAnswer.get(entry.getKey()))) {
+            	mark += 2;
+            }
+    	} 
+		
+		return Response.status(201).entity(String.valueOf(mark)).build();
+	}	
 }
